@@ -1,22 +1,22 @@
-import React from "react";
-import { Box, Button, TextField } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Button, TextField,Snackbar } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-const Form = ({ onCreateUser, onUserCreated }) => {
-  const isNonMobile = useMediaQuery("(min-width:600px)");
 
+const Form = ({ onCreateUser, onUserCreated }) => {
+  const [isSnackbarOpen, setSnackbarOpen] = useState(false);
+  const isNonMobile = useMediaQuery("(min-width:600px)");
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
   const handleFormSubmit = (values, { resetForm }) => {
     const newUser = {
       id: Date.now(),
       ...values,
     };
 
-    // Yeni kullanıcıyı ekleyen fonksiyonu çağırdık.
-    if (onCreateUser && typeof onCreateUser === "function") {
-      onCreateUser(newUser);
-    }
 
     // Formu sıfırladık.
     resetForm();
@@ -31,6 +31,9 @@ const Form = ({ onCreateUser, onUserCreated }) => {
     const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
     const updatedUsers = [...storedUsers, newUser];
     localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+        // Snackbar'ı aç
+        setSnackbarOpen(true);
   };
 
   const phoneRegExp =
@@ -165,6 +168,13 @@ const Form = ({ onCreateUser, onUserCreated }) => {
                 Create New User
               </Button>
             </Box>
+            <Snackbar
+              open={isSnackbarOpen}
+              autoHideDuration={3000}
+              onClose={handleSnackbarClose}
+              message="User created successfully!"
+            />
+
           </form>
         )}
       </Formik>

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import FullCalendar from "@fullcalendar/react";
-import { formatDate } from '@fullcalendar/core';
+import { formatDate } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -12,6 +12,13 @@ import {
   ListItemText,
   Typography,
   useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  useMediaQuery,
 } from "@mui/material";
 import Header from "../../components/Header";
 import { tokens } from "../../theme";
@@ -19,31 +26,61 @@ import { tokens } from "../../theme";
 const Calendar = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const isNonMobile = useMediaQuery("(min-width:600px)");
+
   const [currentEvents, setCurrentEvents] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const handleDateClick = (selected) => {
-    const title = prompt("Please enter a new title for your event");
-    const calendarApi = selected.view.calendar;
-    calendarApi.unselect();
+    setOpenModal(true);
+    setSelectedDate(selected);
+  };
 
+  const handleModalClose = () => {
+    setOpenModal(false);
+  };
+
+  const handleAddEvent = () => {
+    const title = document.getElementById("event-title").value;
     if (title) {
-      calendarApi.addEvent({
-        id: `${selected.dateStr}-${title}`,
+      selectedDate.view.calendar.addEvent({
+        id: `${selectedDate.dateStr}-${title}`,
         title,
-        start: selected.startStr,
-        end: selected.endStr,
-        allDay: selected.allDay,
+        start: selectedDate.startStr,
+        end: selectedDate.endStr,
+        allDay: selectedDate.allDay,
       });
+
+      setCurrentEvents([...currentEvents, {
+        id: `${selectedDate.dateStr}-${title}`,
+        title,
+        start: selectedDate.startStr,
+        end: selectedDate.endStr,
+        allDay: selectedDate.allDay,
+      }]);
     }
+
+    setOpenModal(false);
   };
 
   const handleEventClick = (selected) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete the event '${selected.event.title}'`
-      )
-    ) {
-      selected.event.remove();
+    setSelectedEvent(selected.event);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleDeleteDialogClose = () => {
+    setOpenDeleteDialog(false);
+  };
+
+  const handleDeleteEvent = () => {
+    if (selectedEvent) {
+      selectedEvent.remove();
+      setCurrentEvents(currentEvents.filter(event => event.id !== selectedEvent.id));
+      setSelectedEvent(null);
+      setOpenDeleteDialog(false);
     }
   };
 
@@ -51,46 +88,47 @@ const Calendar = () => {
     <Box m="20px">
       <Header title="Calendar" subtitle="Full Calendar Interactive Page" />
 
-      <Box display="flex" justifyContent="space-between">
+      <Box display="grid" gap="20px" gridTemplateColumns={isNonMobile ? "1fr 3fr" : "1fr"}>
         {/* CALENDAR SIDEBAR */}
-        <Box
-          flex="1 1 20%"
-          backgroundColor={colors.primary[400]}
-          p="15px"
-          borderRadius="4px"
-        >
-          <Typography variant="h5">Events</Typography>
-          <List>
-            {currentEvents.map((event) => (
-              <ListItem
-                key={event.id}
-                sx={{
-                  backgroundColor: colors.greenAccent[500],
-                  margin: "10px 0",
-                  borderRadius: "2px",
-                }}
-              >
-                <ListItemText
-                  primary={event.title}
-                  secondary={
-                    <Typography>
-                      {formatDate(event.start, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </Typography>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
+        {isNonMobile && (
+          <Box
+            backgroundColor={colors.primary[400]}
+            p="15px"
+            borderRadius="4px"
+          >
+            <Typography variant="h5">Events</Typography>
+            <List>
+              {currentEvents.map((event) => (
+                <ListItem
+                  key={event.id}
+                  sx={{
+                    backgroundColor: colors.greenAccent[500],
+                    margin: "10px 0",
+                    borderRadius: "2px",
+                  }}
+                >
+                  <ListItemText
+                    primary={event.title}
+                    secondary={
+                      <Typography>
+                        {formatDate(event.start, {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </Typography>
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        )}
 
         {/* CALENDAR */}
-        <Box flex="1 1 100%" ml="15px">
+        <Box>
           <FullCalendar
-            height="75vh"
+            height={isNonMobile ? "75vh" : "50vh"}
             plugins={[
               dayGridPlugin,
               timeGridPlugin,
@@ -125,6 +163,38 @@ const Calendar = () => {
           />
         </Box>
       </Box>
+
+      {/* Add Event Modal */}
+      <Dialog open={openModal} onClose={handleModalClose}>
+        <DialogTitle>Add Event</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="event-title"
+            label="Event Title"
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleModalClose}>Cancel</Button>
+          <Button onClick={handleAddEvent}>Add</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Event Dialog */}
+      <Dialog open={openDeleteDialog} onClose={handleDeleteDialogClose}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete the event '{selectedEvent?.title}'?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteDialogClose}>Cancel</Button>
+          <Button onClick={handleDeleteEvent} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
