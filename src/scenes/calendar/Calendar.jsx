@@ -34,9 +34,10 @@ const Calendar = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const handleDateClick = (selected) => {
+  const handleDateClick = (arg) => {
+    const isMobile = !isNonMobile;
     setOpenModal(true);
-    setSelectedDate(selected);
+    setSelectedDate(arg);
   };
 
   const handleModalClose = () => {
@@ -54,13 +55,16 @@ const Calendar = () => {
         allDay: selectedDate.allDay,
       });
 
-      setCurrentEvents([...currentEvents, {
-        id: `${selectedDate.dateStr}-${title}`,
-        title,
-        start: selectedDate.startStr,
-        end: selectedDate.endStr,
-        allDay: selectedDate.allDay,
-      }]);
+      setCurrentEvents([
+        ...currentEvents,
+        {
+          id: `${selectedDate.dateStr}-${title}`,
+          title,
+          start: selectedDate.startStr,
+          end: selectedDate.endStr,
+          allDay: selectedDate.allDay,
+        },
+      ]);
     }
 
     setOpenModal(false);
@@ -78,7 +82,9 @@ const Calendar = () => {
   const handleDeleteEvent = () => {
     if (selectedEvent) {
       selectedEvent.remove();
-      setCurrentEvents(currentEvents.filter(event => event.id !== selectedEvent.id));
+      setCurrentEvents(
+        currentEvents.filter((event) => event.id !== selectedEvent.id)
+      );
       setSelectedEvent(null);
       setOpenDeleteDialog(false);
     }
@@ -88,9 +94,64 @@ const Calendar = () => {
     <Box m="20px">
       <Header title="Calendar" subtitle="Full Calendar Interactive Page" />
 
-      <Box display="grid" gap="20px" gridTemplateColumns={isNonMobile ? "1fr 3fr" : "1fr"}>
+      <Box
+        gap="20px"
+        display="flex"
+        justifyContent="center"
+        flexDirection={["column", "row"]}
+      >
+        {/* CALENDAR */}
+        <Box
+          width={["100%", "60%"]}
+          sx={{
+            "& .fc-toolbar-title": {
+              fontSize: ["14px", "14px"],
+              margin: "0 0px",
+            },
+            "& .fc-toolbar-ltr": {
+              fontSize: ["14px", "14px"],
+              alignItems: "flex-start",
+            },
+       
+          }}
+        >
+          <FullCalendar
+            plugins={[
+              dayGridPlugin,
+              timeGridPlugin,
+              interactionPlugin,
+              listPlugin,
+            ]}
+            headerToolbar={{
+              left: "prev,next today",
+              center: "title",
+              right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
+            }}
+            initialView="dayGridMonth"
+            editable={true}
+            selectable={true}
+            selectMirror={true}
+            dayMaxEvents={true}
+            select={handleDateClick}
+            dateClick={handleDateClick}
+            eventClick={handleEventClick}
+            eventsSet={(events) => setCurrentEvents(events)}
+            initialEvents={[
+              {
+                id: "12315",
+                title: "All-day event",
+                date: "2022-09-14",
+              },
+              {
+                id: "5123",
+                title: "Timed event",
+                date: "2022-09-28",
+              },
+            ]}
+          />
+        </Box>
         {/* CALENDAR SIDEBAR */}
-        {isNonMobile && (
+        {
           <Box
             backgroundColor={colors.primary[400]}
             p="15px"
@@ -123,45 +184,7 @@ const Calendar = () => {
               ))}
             </List>
           </Box>
-        )}
-
-        {/* CALENDAR */}
-        <Box>
-          <FullCalendar
-            height={isNonMobile ? "75vh" : "50vh"}
-            plugins={[
-              dayGridPlugin,
-              timeGridPlugin,
-              interactionPlugin,
-              listPlugin,
-            ]}
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
-            }}
-            initialView="dayGridMonth"
-            editable={true}
-            selectable={true}
-            selectMirror={true}
-            dayMaxEvents={true}
-            select={handleDateClick}
-            eventClick={handleEventClick}
-            eventsSet={(events) => setCurrentEvents(events)}
-            initialEvents={[
-              {
-                id: "12315",
-                title: "All-day event",
-                date: "2022-09-14",
-              },
-              {
-                id: "5123",
-                title: "Timed event",
-                date: "2022-09-28",
-              },
-            ]}
-          />
-        </Box>
+        }
       </Box>
 
       {/* Add Event Modal */}

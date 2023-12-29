@@ -32,7 +32,7 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
             },
           },
         },
-        legends: {
+        legends: { 
           text: {
             fill: colors.grey[100],
           },
@@ -59,26 +59,29 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
       axisRight={null}
       axisBottom={{
         orient: "bottom",
-        tickSize: 0,
-        tickPadding: 5,
-        tickRotation: 0,
-        legend: isDashboard ? undefined : "transportation", // added
-        legendOffset: 36,
+        tickSize: isDashboard ? 0 : 5,
+        tickPadding: isDashboard ? 0 : 5,
+        tickRotation: isDashboard ? 0 : -60,
+        legend: isDashboard ? undefined : "transportation",
+        legendOffset: isDashboard ? 0 : 40,
         legendPosition: "middle",
+
       }}
       axisLeft={{
         orient: "left",
-        tickValues: 5, // added
+        tickValues: isDashboard ? 1 : 5,
         tickSize: 3,
-        tickPadding: 5,
-        tickRotation: 0,
-        legend: isDashboard ? undefined : "count", // added
-        legendOffset: -40,
+        tickPadding: isDashboard ? 0 : 5,
+        tickRotation: isDashboard ? 0 : -45,
+        legend: isDashboard ? undefined : "count",
+        legendOffset: isDashboard ? 0 : -40,
         legendPosition: "middle",
       }}
+      
+      
       enableGridX={false}
       enableGridY={false}
-      pointSize={8}
+      pointSize={isDashboard ? 5 : 8}
       pointColor={{ theme: "background" }}
       pointBorderWidth={2}
       pointBorderColor={{ from: "serieColor" }}
@@ -86,17 +89,17 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
       useMesh={true}
       legends={[
         {
-          anchor: "bottom-right",
+          anchor: isDashboard ? "top-right" : "bottom-right",
           direction: "column",
           justify: false,
-          translateX: 100,
-          translateY: 0,
+          translateX: isDashboard ? 0 : 100,
+          translateY: isDashboard ? 0 : 0,
           itemsSpacing: 0,
           itemDirection: "left-to-right",
           itemWidth: 80,
           itemHeight: 20,
           itemOpacity: 0.75,
-          symbolSize: 12,
+          symbolSize: isDashboard ? 8 : 12,
           symbolShape: "circle",
           symbolBorderColor: "rgba(0, 0, 0, .5)",
           effects: [
@@ -110,6 +113,7 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
           ],
         },
       ]}
+      
     />
   );
 };

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
-import { Box, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, IconButton, Typography, useTheme, useMediaQuery } from "@mui/material";
 import { tokens } from "../../theme";
 import { Link } from "react-router-dom";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -39,7 +39,8 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
 const Menubar = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const isNonMobile = useMediaQuery("(min-width:1024px)");
+  const [isCollapsed, setIsCollapsed] = useState(!isNonMobile);
   const [selected, setSelected] = useState("Dashboard");
 
   return (
@@ -71,9 +72,7 @@ const Menubar = () => {
         >
           {/* LOGO AND MENU ICON */}
           <MenuItem
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
-          >
+           onClick={() => setIsCollapsed(!isCollapsed)} icon={<MenuOutlinedIcon />} >
             {!isCollapsed && (
               <Box
                 display="flex"
