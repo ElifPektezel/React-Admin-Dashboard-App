@@ -13,7 +13,6 @@ const Team = () => {
   const [userList, setUserList] = useState([]);
 
   useEffect(() => {
-    // Sayfa yüklendiğinde localStorage'dan kullanıcı bilgilerini aldık.
     const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
     setUserList(storedUsers);
   }, []);
@@ -61,8 +60,8 @@ const Team = () => {
     <Box m="20px">
       <Header title="TEAM" subtitle="Managing the Team Members" />
       <Box
-        m="40px 0 0 0"
-        height="75vh"
+        m="20px 0 0 0"
+
         sx={{
           "& .MuiDataGrid-root": {
             border: "none",
@@ -94,6 +93,7 @@ const Team = () => {
           rows={userList}
           columns={columns}
           disableSelectionOnClick
+          pageSize={5} 
         />
       </Box>
     </Box>

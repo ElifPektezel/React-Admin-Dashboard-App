@@ -1,9 +1,9 @@
-import { Box } from "@mui/material";
+import React from "react";
+import { Box, useTheme } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { tokens } from "../../theme";
 import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
-import { useTheme } from "@mui/material";
+import { tokens } from "../../theme";
 
 const Contacts = () => {
   const theme = useTheme();
@@ -59,9 +59,10 @@ const Contacts = () => {
         subtitle="List of Contacts for Future Reference"
       />
       <Box
-        m="40px 0 0 0"
-        height="75vh"
+        m="20px 0 0 0"
         sx={{
+          maxWidth: "100%",
+          overflowX: "auto",
           "& .MuiDataGrid-root": {
             border: "none",
           },
@@ -87,6 +88,21 @@ const Contacts = () => {
           },
           "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
             color: `${colors.grey[100]} !important`,
+          },
+          "@media (max-width: 600px)": {
+            // Ekran genişliği 600px'den küçükse bazı stilleri güncelle
+            "& .MuiDataGrid-columnsContainer, .MuiDataGrid-cell": {
+              display: "block",
+            },
+            "& .MuiDataGrid-cell": {
+              borderBottom: `1px solid ${colors.grey[300]}`,
+              padding: "8px",
+              boxSizing: "border-box",
+              width: "100%",
+            },
+            "& .MuiDataGrid-colCell": {
+              marginBottom: "8px",
+            },
           },
         }}
       >

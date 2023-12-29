@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import FullCalendar from "@fullcalendar/react";
-import { formatDate } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -22,12 +21,12 @@ import {
 } from "@mui/material";
 import Header from "../../components/Header";
 import { tokens } from "../../theme";
+import { formatDate } from "@fullcalendar/core";
 
 const Calendar = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const isNonMobile = useMediaQuery("(min-width:600px)");
-
   const [currentEvents, setCurrentEvents] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -35,6 +34,8 @@ const Calendar = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   const handleDateClick = (arg) => {
+    const calendarApi = arg.view.calendar;
+    calendarApi.unselect();
     const isMobile = !isNonMobile;
     setOpenModal(true);
     setSelectedDate(arg);
@@ -46,29 +47,24 @@ const Calendar = () => {
 
   const handleAddEvent = () => {
     const title = document.getElementById("event-title").value;
-    if (title) {
-      selectedDate.view.calendar.addEvent({
+  
+    if (title && selectedDate) {
+      const newEvent = {
         id: `${selectedDate.dateStr}-${title}`,
         title,
-        start: selectedDate.startStr,
-        end: selectedDate.endStr,
+        start: selectedDate.start || selectedDate.date,
+        end: selectedDate.end || selectedDate.date,
         allDay: selectedDate.allDay,
-      });
-
-      setCurrentEvents([
-        ...currentEvents,
-        {
-          id: `${selectedDate.dateStr}-${title}`,
-          title,
-          start: selectedDate.startStr,
-          end: selectedDate.endStr,
-          allDay: selectedDate.allDay,
-        },
-      ]);
+      };
+  
+      selectedDate.view.calendar.addEvent(newEvent);
+  
+      setCurrentEvents([...currentEvents, newEvent]);
     }
-
+  
     setOpenModal(false);
   };
+  
 
   const handleEventClick = (selected) => {
     setSelectedEvent(selected.event);
@@ -78,16 +74,19 @@ const Calendar = () => {
   const handleDeleteDialogClose = () => {
     setOpenDeleteDialog(false);
   };
-
   const handleDeleteEvent = () => {
     if (selectedEvent) {
-      selectedEvent.remove();
-      setCurrentEvents(
-        currentEvents.filter((event) => event.id !== selectedEvent.id)
-      );
+      setCurrentEvents(currentEvents.filter((event) => event.id !== selectedEvent.id));
       setSelectedEvent(null);
       setOpenDeleteDialog(false);
     }
+  };
+  
+  
+
+  const handleEventItemClick = (event) => {
+    setSelectedEvent(event);
+    setOpenDeleteDialog(true);
   };
 
   return (
@@ -112,20 +111,14 @@ const Calendar = () => {
               fontSize: ["14px", "14px"],
               alignItems: "flex-start",
             },
-       
           }}
         >
           <FullCalendar
-            plugins={[
-              dayGridPlugin,
-              timeGridPlugin,
-              interactionPlugin,
-              listPlugin,
-            ]}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
             headerToolbar={{
               left: "prev,next today",
               center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
+              right: "dayGridMonth,timeGridWeek,timeGridDay",
             }}
             initialView="dayGridMonth"
             editable={true}
@@ -151,53 +144,42 @@ const Calendar = () => {
           />
         </Box>
         {/* CALENDAR SIDEBAR */}
-        {
-          <Box
-            backgroundColor={colors.primary[400]}
-            p="15px"
-            borderRadius="4px"
-          >
-            <Typography variant="h5">Events</Typography>
-            <List>
-              {currentEvents.map((event) => (
-                <ListItem
-                  key={event.id}
-                  sx={{
-                    backgroundColor: colors.greenAccent[500],
-                    margin: "10px 0",
-                    borderRadius: "2px",
-                  }}
-                >
-                  <ListItemText
-                    primary={event.title}
-                    secondary={
-                      <Typography>
-                        {formatDate(event.start, {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </Typography>
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </Box>
-        }
+        <Box backgroundColor={colors.primary[400]} p="15px" borderRadius="4px">
+          <Typography variant="h5">Events</Typography>
+          <List>
+            {currentEvents.map((event) => (
+              <ListItem
+                key={event.id}
+                onClick={() => handleEventItemClick(event)}
+                sx={{
+                  backgroundColor: colors.greenAccent[500],
+                  margin: "10px 0",
+                  borderRadius: "2px",
+                }}
+              >
+                <ListItemText
+                  primary={event.title}
+                  secondary={
+                    <Typography>
+                      {formatDate(event.start, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </Typography>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Box>
       </Box>
 
       {/* Add Event Modal */}
       <Dialog open={openModal} onClose={handleModalClose}>
         <DialogTitle>Add Event</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="event-title"
-            label="Event Title"
-            fullWidth
-          />
+          <TextField autoFocus margin="dense" id="event-title" label="Event Title" fullWidth />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleModalClose}>Cancel</Button>
